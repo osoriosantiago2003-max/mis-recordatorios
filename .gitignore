@@ -25,3 +25,6 @@ dist-ssr
 
 # Contraseña de la base de datos (privada)
 .db-password.txt
+
+# Local Netlify folder
+.netlify
