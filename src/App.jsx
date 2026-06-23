@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase, supabaseConfigurado } from './supabaseClient'
+import { activarAlarmas, soportaPush } from './push'
 import './App.css'
 
 // Frases de inspiración con fotos de personas famosas.
@@ -46,9 +47,17 @@ function App() {
   const [titulo, setTitulo] = useState('')
   // Fecha opcional del recordatorio.
   const [fecha, setFecha] = useState('')
+  // Hora opcional de la alarma.
+  const [hora, setHora] = useState('')
   // Para mostrar "Cargando..." o errores.
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
+  // Estado del botón "Activar alarmas" (notificaciones push).
+  const [estadoAlarmas, setEstadoAlarmas] = useState(
+    typeof Notification !== 'undefined' && Notification.permission === 'granted'
+      ? 'activadas'
+      : 'inactivas'
+  )
 
   // Cuando la app abre, traemos las tareas guardadas.
   useEffect(() => {
@@ -138,7 +147,12 @@ function App() {
 
     const { data, error } = await supabase
       .from('tareas')
-      .insert({ titulo: titulo.trim(), fecha: fecha || null, completada: false })
+      .insert({
+        titulo: titulo.trim(),
+        fecha: fecha || null,
+        hora: hora || null,
+        completada: false,
+      })
       .select()
 
     if (error) {
@@ -147,7 +161,21 @@ function App() {
       setTareas([data[0], ...tareas])
       setTitulo('')
       setFecha('')
+      setHora('')
       setError('')
+    }
+  }
+
+  // Activa las alarmas (notificaciones push) en este teléfono.
+  async function manejarActivarAlarmas() {
+    setEstadoAlarmas('activando')
+    const r = await activarAlarmas()
+    if (r.ok) {
+      setEstadoAlarmas('activadas')
+      setError('')
+    } else {
+      setEstadoAlarmas('inactivas')
+      setError(r.motivo)
     }
   }
 
@@ -248,6 +276,30 @@ function App() {
       <h1>📝 Mis Recordatorios</h1>
       <p className="subtitulo">Tareas y recordatorios personales</p>
 
+      {/* Botón para activar las alarmas/avisos en el teléfono */}
+      <div className="alarmas-caja">
+        {estadoAlarmas === 'activadas' ? (
+          <p className="alarmas-ok">🔔 Alarmas activadas en este dispositivo</p>
+        ) : (
+          <>
+            <button
+              className="alarmas-btn"
+              onClick={manejarActivarAlarmas}
+              disabled={estadoAlarmas === 'activando' || !soportaPush()}
+            >
+              {estadoAlarmas === 'activando' ? 'Activando…' : '🔔 Activar alarmas en este teléfono'}
+            </button>
+            {!soportaPush() && (
+              <p className="alarmas-ayuda">
+                📱 En iPhone: toca <strong>Compartir</strong> →{' '}
+                <strong>Añadir a pantalla de inicio</strong>, abre la app desde ahí y vuelve a tocar
+                este botón.
+              </p>
+            )}
+          </>
+        )}
+      </div>
+
       {/* Frase de inspiración con foto, cambia sola cada 6 segundos */}
       <div className="frase" key={fraseActual}>
         <img
@@ -313,6 +365,12 @@ function App() {
           value={fecha}
           onChange={(e) => setFecha(e.target.value)}
         />
+        <input
+          type="time"
+          value={hora}
+          onChange={(e) => setHora(e.target.value)}
+          title="Hora de la alarma (opcional)"
+        />
         <button type="submit">Agregar</button>
       </form>
 
@@ -334,7 +392,13 @@ function App() {
                   />
                   <span>
                     {t.titulo}
-                    {t.fecha && <em className="fecha"> — {t.fecha}</em>}
+                    {t.fecha && (
+                      <em className="fecha">
+                        {' '}
+                        — {t.fecha}
+                        {t.hora && ` a las ${t.hora.slice(0, 5)}`}
+                      </em>
+                    )}
                   </span>
                 </label>
                 <button className="borrar" onClick={() => borrarTarea(t.id)}>

@@ -374,3 +374,44 @@ h2 {
   margin-top: 1.5rem;
   color: #cdeeff;
 }
+
+/* --- Botón "Activar alarmas" (notificaciones push) --- */
+.alarmas-caja {
+  margin: 0.75rem 0 1.25rem;
+  text-align: center;
+}
+.alarmas-btn {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 195, 255, 0.5);
+  background: rgba(0, 195, 255, 0.15);
+  color: #eaffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.2s, box-shadow 0.2s;
+}
+.alarmas-btn:hover:not(:disabled) {
+  background: rgba(0, 195, 255, 0.3);
+  box-shadow: 0 0 18px rgba(0, 195, 255, 0.35);
+}
+.alarmas-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.alarmas-ok {
+  color: #7fffd4;
+  font-weight: 600;
+  background: rgba(0, 255, 180, 0.08);
+  border: 1px solid rgba(0, 255, 180, 0.3);
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  margin: 0;
+}
+.alarmas-ayuda {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  color: #9fc6dd;
+  line-height: 1.4;
+}
