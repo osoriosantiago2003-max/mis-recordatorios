@@ -1,7 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase, supabaseConfigurado } from './supabaseClient'
 import { activarAlarmas, soportaPush } from './push'
 import './App.css'
+
+// Preguntas que el asistente te hace para que anotes pendientes.
+const PREGUNTAS = [
+  '¿Qué tienes que hacer hoy, brodi? 👇',
+  '¿Se te quedó algo pendiente? Anótalo aquí 👇',
+  '¿Algo importante para esta semana? 📌',
+  '¿Tienes alguna tarea de la U por anotar? 🎓',
+  '¿Qué no se te puede olvidar? Apúntalo 👇',
+]
 
 // Frases de inspiración con fotos de personas famosas.
 // Las fotos vienen de Wikimedia Commons (Special:FilePath siempre funciona).
@@ -41,6 +50,10 @@ const FRASES = [
 function App() {
   // Cuál frase de inspiración se muestra ahora mismo.
   const [fraseActual, setFraseActual] = useState(0)
+  // Cuál pregunta del asistente se muestra ahora mismo.
+  const [preguntaActual, setPreguntaActual] = useState(0)
+  // Para poder "saltar" al campo de escribir cuando tocas anotar.
+  const inputTitulo = useRef(null)
   // Lista de tareas/recordatorios que vienen de la base de datos.
   const [tareas, setTareas] = useState([])
   // Texto que el usuario está escribiendo para una nueva tarea.
@@ -75,6 +88,22 @@ function App() {
     }, 6000)
     return () => clearInterval(intervalo)
   }, [])
+
+  // Cada 8 segundos el asistente cambia de pregunta.
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      setPreguntaActual((i) => (i + 1) % PREGUNTAS.length)
+    }, 8000)
+    return () => clearInterval(intervalo)
+  }, [])
+
+  // Lleva el cursor al campo de escribir (cuando tocas "Anotar algo").
+  function irAEscribir() {
+    if (inputTitulo.current) {
+      inputTitulo.current.focus()
+      inputTitulo.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
 
   // El asistente revisa las tareas y avisa con anticipación.
   // Categoriza cada pendiente según su fecha: vencida, hoy, mañana o próxima.
@@ -323,6 +352,17 @@ function App() {
       {!cargando && (
         <div className="asistente">
           <p className="asistente-titulo">🔔 Tu asistente personal</p>
+
+          {/* El asistente te pregunta y te deja anotar de una */}
+          <div className="asistente-pregunta">
+            <p className="pregunta-texto" key={preguntaActual}>
+              {PREGUNTAS[preguntaActual]}
+            </p>
+            <button type="button" className="pregunta-btn" onClick={irAEscribir}>
+              ✍️ Anotar algo
+            </button>
+          </div>
+
           {!hayAvisos && (
             <p className="aviso-linea aviso-ok">
               Todo tranquilo por ahora, brodi. ¡Sigue así! 😎
@@ -355,6 +395,7 @@ function App() {
 
       <form onSubmit={agregarTarea} className="formulario">
         <input
+          ref={inputTitulo}
           type="text"
           placeholder="¿Qué tienes que hacer?"
           value={titulo}

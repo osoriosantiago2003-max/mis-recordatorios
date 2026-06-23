@@ -416,3 +416,7 @@ enabled = true
 [functions.enviar-recordatorios]
 # El cron la llama sin login, por eso no exigimos JWT.
 verify_jwt = false
+
+[functions.resumen-pendientes]
+# El cron la llama sin login, por eso no exigimos JWT.
+verify_jwt = false
