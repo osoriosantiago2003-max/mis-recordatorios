@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Contraseña de la base de datos (privada)
+.db-password.txt
