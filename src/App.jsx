@@ -67,6 +67,54 @@ function App() {
     return () => clearInterval(intervalo)
   }, [])
 
+  // El asistente revisa las tareas y avisa con anticipación.
+  // Categoriza cada pendiente según su fecha: vencida, hoy, mañana o próxima.
+  function clasificarPorFecha(lista) {
+    const hoy = new Date()
+    hoy.setHours(0, 0, 0, 0)
+    const aFecha = (texto) => {
+      const [a, m, d] = texto.split('-').map(Number)
+      return new Date(a, m - 1, d)
+    }
+    const diasDe = (fecha) => Math.round((aFecha(fecha) - hoy) / 86400000)
+
+    const vencidas = []
+    const deHoy = []
+    const deManana = []
+    const proximas = []
+    lista.forEach((t) => {
+      if (!t.fecha) return
+      const dias = diasDe(t.fecha)
+      if (dias < 0) vencidas.push(t)
+      else if (dias === 0) deHoy.push(t)
+      else if (dias === 1) deManana.push(t)
+      else if (dias <= 3) proximas.push(t)
+    })
+    return { vencidas, deHoy, deManana, proximas }
+  }
+
+  // Pedimos permiso para mostrar notificaciones del navegador (avisos).
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  }, [])
+
+  // Cuando se cargan las tareas, mandamos un aviso si hay algo para hoy o vencido.
+  useEffect(() => {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return
+    const { vencidas, deHoy } = clasificarPorFecha(tareas.filter((t) => !t.completada))
+    const total = vencidas.length + deHoy.length
+    if (total > 0) {
+      new Notification('🔔 Recordatorio de tu asistente', {
+        body:
+          (deHoy.length ? `Tienes ${deHoy.length} tarea(s) para hoy. ` : '') +
+          (vencidas.length ? `¡Ojo! ${vencidas.length} ya están atrasadas.` : ''),
+      })
+    }
+    // Solo cuando cambia la cantidad de tareas, no en cada render.
+  }, [tareas.length])
+
   // Leer todas las tareas desde Supabase, las más nuevas primero.
   async function cargarTareas() {
     setCargando(true)
@@ -151,6 +199,13 @@ function App() {
   const completadas = tareas.filter((t) => t.completada)
 
   const frase = FRASES[fraseActual]
+  const avisos = clasificarPorFecha(pendientes)
+  const hayAvisos =
+    avisos.vencidas.length +
+      avisos.deHoy.length +
+      avisos.deManana.length +
+      avisos.proximas.length >
+    0
 
   return (
     <div className="contenedor">
@@ -176,6 +231,40 @@ function App() {
           <p className="frase-autor">— {frase.autor}</p>
         </div>
       </div>
+
+      {/* Asistente personal: avisos previos de lo que tienes que hacer */}
+      {!cargando && (
+        <div className="asistente">
+          <p className="asistente-titulo">🔔 Tu asistente personal</p>
+          {!hayAvisos && (
+            <p className="aviso-linea aviso-ok">
+              Todo tranquilo por ahora, brodi. ¡Sigue así! 😎
+            </p>
+          )}
+          {avisos.vencidas.length > 0 && (
+            <p className="aviso-linea aviso-vencida">
+              ⛔ Tienes <strong>{avisos.vencidas.length}</strong> atrasada(s):{' '}
+              {avisos.vencidas.map((t) => t.titulo).join(', ')}
+            </p>
+          )}
+          {avisos.deHoy.length > 0 && (
+            <p className="aviso-linea aviso-hoy">
+              🎯 Para <strong>HOY</strong>: {avisos.deHoy.map((t) => t.titulo).join(', ')}
+            </p>
+          )}
+          {avisos.deManana.length > 0 && (
+            <p className="aviso-linea aviso-manana">
+              ⏰ Para <strong>mañana</strong>:{' '}
+              {avisos.deManana.map((t) => t.titulo).join(', ')}
+            </p>
+          )}
+          {avisos.proximas.length > 0 && (
+            <p className="aviso-linea aviso-proxima">
+              📅 Próximos días: {avisos.proximas.map((t) => t.titulo).join(', ')}
+            </p>
+          )}
+        </div>
+      )}
 
       <form onSubmit={agregarTarea} className="formulario">
         <input

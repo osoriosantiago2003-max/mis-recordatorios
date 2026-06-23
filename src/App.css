@@ -112,6 +112,61 @@ h2 {
   color: #60a5fa;
 }
 
+/* Asistente personal: panel de avisos */
+.asistente {
+  margin-top: 1.5rem;
+  padding: 1.1rem 1.25rem;
+  background: #ffffff;
+  border: 2px solid #2563eb;
+  border-radius: 18px;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.15);
+  animation: entrarFrase 0.5s ease both;
+}
+
+.asistente-titulo {
+  font-weight: 800;
+  color: #0a0a0a;
+  margin-bottom: 0.6rem;
+  font-size: 1.05rem;
+}
+
+.aviso-linea {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  padding: 0.5rem 0.7rem;
+  border-radius: 10px;
+  margin-bottom: 0.45rem;
+}
+
+.aviso-linea:last-child {
+  margin-bottom: 0;
+}
+
+.aviso-ok {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.aviso-vencida {
+  background: #0a0a0a;
+  color: #ffffff;
+}
+
+.aviso-hoy {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.aviso-manana {
+  background: #dbeafe;
+  color: #0a0a0a;
+}
+
+.aviso-proxima {
+  background: #f1f5f9;
+  color: #0a0a0a;
+}
+
 /* Formulario */
 .formulario {
   display: flex;
