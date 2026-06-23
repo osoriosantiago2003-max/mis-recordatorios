@@ -151,8 +151,43 @@ function App() {
     }
   }
 
+  // Sonido tipo "lightsaber" de Star Wars, generado con el navegador (Web Audio).
+  function sonarLightsaber() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext
+      if (!Ctx) return
+      const ctx = new Ctx()
+      const ahora = ctx.currentTime
+      const master = ctx.createGain()
+      master.gain.value = 0.0001
+      master.connect(ctx.destination)
+
+      // Dos osciladores ligeramente desafinados = ese zumbido grueso del sable.
+      const frecs = [110, 112]
+      frecs.forEach((f) => {
+        const osc = ctx.createOscillator()
+        osc.type = 'sawtooth'
+        // Barrido de grave a agudo: el "encendido/golpe" del sable.
+        osc.frequency.setValueAtTime(f, ahora)
+        osc.frequency.exponentialRampToValueAtTime(f * 3, ahora + 0.18)
+        osc.frequency.exponentialRampToValueAtTime(f * 1.6, ahora + 0.55)
+        osc.connect(master)
+        osc.start(ahora)
+        osc.stop(ahora + 0.75)
+      })
+
+      // Envolvente de volumen: sube rápido y se apaga suave.
+      master.gain.exponentialRampToValueAtTime(0.35, ahora + 0.04)
+      master.gain.exponentialRampToValueAtTime(0.0001, ahora + 0.75)
+    } catch (e) {
+      // Si el navegador no deja reproducir audio, no pasa nada.
+    }
+  }
+
   // Marcar una tarea como completada o pendiente.
   async function alternarCompletada(tarea) {
+    // Solo suena cuando se MARCA como completada (no al desmarcar).
+    if (!tarea.completada) sonarLightsaber()
     const { error } = await supabase
       .from('tareas')
       .update({ completada: !tarea.completada })

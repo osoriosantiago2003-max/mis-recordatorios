@@ -1,7 +1,8 @@
 :root {
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Fuente base elegante */
+  font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
-  color: #0a0a0a;
+  color: #e6f7ff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -13,16 +14,28 @@
 body {
   margin: 0;
   min-height: 100vh;
-  /* Fondo azul → negro que se mueve suavemente (paleta blanco/negro/azul) */
-  background: linear-gradient(-45deg, #0a0a0a, #0b2447, #1d4ed8, #0a0a0a, #2563eb);
-  background-size: 400% 400%;
-  animation: fondoAnimado 20s ease infinite;
+  background: #03060d;
+  /* Fondo estilo TRON: rejilla de neón con luces que brillan */
+  background-image:
+    radial-gradient(circle at 50% 120%, rgba(0, 195, 255, 0.25), transparent 60%),
+    linear-gradient(rgba(0, 195, 255, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 195, 255, 0.18) 1px, transparent 1px);
+  background-size: 100% 100%, 44px 44px, 44px 44px;
+  background-position: center, center, center;
+  animation: rejillaTron 14s linear infinite, brilloFondo 5s ease-in-out infinite;
+  overflow-x: hidden;
 }
 
-@keyframes fondoAnimado {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* La rejilla se desplaza dando sensación de profundidad */
+@keyframes rejillaTron {
+  0% { background-position: center, 0 0, 0 0; }
+  100% { background-position: center, 0 44px, 44px 0; }
+}
+
+/* El resplandor del fondo "respira" */
+@keyframes brilloFondo {
+  0%, 100% { background-color: #03060d; }
+  50% { background-color: #050b18; }
 }
 
 #root {
@@ -32,17 +45,21 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  position: relative;
+  z-index: 1;
 }
 
 h1, h2 {
-  font-weight: 800;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 p { margin: 0; }
 
 code {
   font-family: ui-monospace, Consolas, monospace;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 195, 255, 0.12);
   padding: 2px 6px;
   border-radius: 5px;
   font-size: 0.9em;
