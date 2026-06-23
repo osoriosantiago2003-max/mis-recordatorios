@@ -1,0 +1,11 @@
+# Configuración para desplegar en Netlify.
+[build]
+  command = "npm run build"   # Cómo se construye la app
+  publish = "dist"            # Carpeta que Netlify publica
+
+# Para que una app de una sola página (React) funcione al recargar
+# o entrar a cualquier ruta, redirigimos todo al index.html.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
