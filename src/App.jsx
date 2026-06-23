@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase, supabaseConfigurado } from './supabaseClient'
 import { activarAlarmas, soportaPush } from './push'
+import Noticias from './Noticias'
 import './App.css'
 
 // Preguntas que el asistente te hace para que anotes pendientes.
@@ -52,6 +53,8 @@ function App() {
   const [fraseActual, setFraseActual] = useState(0)
   // Cuál pregunta del asistente se muestra ahora mismo.
   const [preguntaActual, setPreguntaActual] = useState(0)
+  // Ventanilla activa: 'recordatorios' o 'noticias'.
+  const [vista, setVista] = useState('recordatorios')
   // Para poder "saltar" al campo de escribir cuando tocas anotar.
   const inputTitulo = useRef(null)
   // Lista de tareas/recordatorios que vienen de la base de datos.
@@ -305,6 +308,26 @@ function App() {
       <h1>📝 Mis Recordatorios</h1>
       <p className="subtitulo">Tareas y recordatorios personales</p>
 
+      {/* Dos ventanillas: Recordatorios y Noticias */}
+      <div className="pestanas">
+        <button
+          className={vista === 'recordatorios' ? 'pestana activa' : 'pestana'}
+          onClick={() => setVista('recordatorios')}
+        >
+          📝 Recordatorios
+        </button>
+        <button
+          className={vista === 'noticias' ? 'pestana activa' : 'pestana'}
+          onClick={() => setVista('noticias')}
+        >
+          🌎 Noticias
+        </button>
+      </div>
+
+      {vista === 'noticias' && <Noticias />}
+
+      {vista === 'recordatorios' && (
+      <>
       {/* Botón para activar las alarmas/avisos en el teléfono */}
       <div className="alarmas-caja">
         {estadoAlarmas === 'activadas' ? (
@@ -472,6 +495,8 @@ function App() {
             </>
           )}
         </>
+      )}
+      </>
       )}
     </div>
   )
