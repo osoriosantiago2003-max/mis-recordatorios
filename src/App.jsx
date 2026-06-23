@@ -2,7 +2,44 @@ import { useEffect, useState } from 'react'
 import { supabase, supabaseConfigurado } from './supabaseClient'
 import './App.css'
 
+// Frases de inspiración con fotos de personas famosas.
+// Las fotos vienen de Wikimedia Commons (Special:FilePath siempre funciona).
+const FRASES = [
+  {
+    texto: 'El éxito es la suma de pequeños esfuerzos repetidos día tras día.',
+    autor: 'Nelson Mandela',
+    emoji: '✊',
+    foto: 'https://commons.wikimedia.org/wiki/Special:FilePath/Nelson_Mandela_1994.jpg?width=200',
+  },
+  {
+    texto: 'La imaginación es más importante que el conocimiento.',
+    autor: 'Albert Einstein',
+    emoji: '🧠',
+    foto: 'https://commons.wikimedia.org/wiki/Special:FilePath/Albert_Einstein_Head.jpg?width=200',
+  },
+  {
+    texto: 'Tu tiempo es limitado, no lo gastes viviendo la vida de otro.',
+    autor: 'Steve Jobs',
+    emoji: '💡',
+    foto: 'https://commons.wikimedia.org/wiki/Special:FilePath/Steve_Jobs_Headshot_2010-CROP_(cropped_2).jpg?width=200',
+  },
+  {
+    texto: 'No cuentes los días, haz que los días cuenten.',
+    autor: 'Muhammad Ali',
+    emoji: '🥊',
+    foto: 'https://commons.wikimedia.org/wiki/Special:FilePath/Muhammad_Ali_NYWTS.jpg?width=200',
+  },
+  {
+    texto: 'Las cosas grandes nunca vienen de la zona de confort.',
+    autor: 'Kobe Bryant',
+    emoji: '🏀',
+    foto: 'https://commons.wikimedia.org/wiki/Special:FilePath/Kobe_Bryant_2014.jpg?width=200',
+  },
+]
+
 function App() {
+  // Cuál frase de inspiración se muestra ahora mismo.
+  const [fraseActual, setFraseActual] = useState(0)
   // Lista de tareas/recordatorios que vienen de la base de datos.
   const [tareas, setTareas] = useState([])
   // Texto que el usuario está escribiendo para una nueva tarea.
@@ -20,6 +57,14 @@ function App() {
     } else {
       setCargando(false)
     }
+  }, [])
+
+  // Cada 6 segundos cambiamos a la siguiente frase de inspiración.
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      setFraseActual((i) => (i + 1) % FRASES.length)
+    }, 6000)
+    return () => clearInterval(intervalo)
   }, [])
 
   // Leer todas las tareas desde Supabase, las más nuevas primero.
@@ -105,10 +150,32 @@ function App() {
   const pendientes = tareas.filter((t) => !t.completada)
   const completadas = tareas.filter((t) => t.completada)
 
+  const frase = FRASES[fraseActual]
+
   return (
     <div className="contenedor">
+      <div className="saludo">¿Qué pasó mi brodi? 👋</div>
       <h1>📝 Mis Recordatorios</h1>
       <p className="subtitulo">Tareas y recordatorios personales</p>
+
+      {/* Frase de inspiración con foto, cambia sola cada 6 segundos */}
+      <div className="frase" key={fraseActual}>
+        <img
+          className="frase-foto"
+          src={frase.foto}
+          alt={frase.autor}
+          onError={(e) => {
+            // Si la foto no carga, mostramos un emoji en su lugar.
+            e.target.style.display = 'none'
+            e.target.nextSibling.style.display = 'flex'
+          }}
+        />
+        <div className="frase-emoji">{frase.emoji}</div>
+        <div className="frase-texto">
+          <p className="frase-cita">“{frase.texto}”</p>
+          <p className="frase-autor">— {frase.autor}</p>
+        </div>
+      </div>
 
       <form onSubmit={agregarTarea} className="formulario">
         <input
